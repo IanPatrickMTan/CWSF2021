@@ -50,16 +50,38 @@ def neuralNetwork(inputs, weights, **kwargs):
     return neuronOutputs
 
 
-def generateDx(inputs, weights, **kwargs):
-    dx, neuronAmount, weightAmount = karges(kwargs, 'dx', 0.01), karges(kwargs, 'neuronAmount', len(weights)), karges(kwargs, 'weightAmount', len(weights[0]))
-    totalWeightAmount = neuronAmount * weightAmount
-    return np.identity(len(inputs)) * dx + inputs, np.reshape(np.tile(np.append(dx, np.zeros((totalWeightAmount))), totalWeightAmount)[:totalWeightAmount ** 2], (neuronAmount, weightAmount, neuronAmount, weightAmount)) + weights
+def generateDx(vector, **kwargs):
+    return np.identity(len(vector)) * karges(kwargs, 'dx', 0.01) + vector
 
 
 def optimizer(inputs, weights, outputs, **kwargs):
     rawCost, learningRate, dx = karges(kwargs, 'rawCost', cost(outputs, layer(inputs, weights, **kwargs))), karges(kwargs, 'learningRate', 0.1), karges(kwargs, 'dx', 0.01)
-    dxInputs, dxWeights = generateDx(inputs, weights, **kwargs)
-    return inputs - (cost(outputs, layer(dxInputs, weights, **kwargs)) - rawCost) / dx * learningRate, weights - (cost(outputs, layer(inputs, dxWeights, **kwargs)) - rawCost) / dx * learningRate
+    print('doing inputs', inputs.shape)
+    newInputs = inputs - (cost(outputs, layer(generateDx(inputs, **kwargs), weights, **kwargs)) - rawCost) / dx * learningRate
+    print('finished inputs')
+    newWeights = []
+    for neuronIndex, neuronWeights in enumerate(weights):
+        print('doing neuron', neuronIndex)
+        newWeights.append(neuronWeights - (cost(outputs[neuronIndex], layer(inputs, generateDx(neuronWeights, **kwargs), **kwargs)) - rawCost) / dx * learningRate)
+        print('finished neuron', neuronIndex)
+    newWeights = np.array(newWeights)
+    print(newInputs.shape, newWeights.shape)
+    return newInputs, newWeights
+
+
+def train(datasetFunc, weights, **kwargs):
+    costThreshold, iterLimit = karges(kwargs, 'costThreshold', 0.1), karges(kwargs, 'iterLimit', 1000)
+    iterCost = 1
+    newWeights = deepcopy(weights)
+    for iteration in range(iterLimit):
+        if iterCost <= costThreshold:
+            break
+        inputs, outputs = datasetFunc(iteration, **kwargs)
+        newWeights = backProp(inputs, newWeights, outputs, **kwargs)
+        prediction = neuralNetwork(inputs, weights, **kwargs)[-1]
+        iterCost = cost(outputs, prediction)
+        print(f'Statistics of iteration #{iteration + 1}:\n\nPrediction: {prediction}\n\nDataset Output: {outputs}\n\nCost: {iterCost}')
+    return newWeights
 
 
 def backProp(inputs, weights, outputs, **kwargs):
