@@ -19,6 +19,10 @@ def deepcopy(x):
 
 
 def cost(t, v):
+    return (t - v) ** 2
+
+
+def sumCost(t, v):
     return np.sum((t - v) ** 2, axis = -1)
 
 
@@ -50,22 +54,16 @@ def neuralNetwork(inputs, weights, **kwargs):
     return neuronOutputs
 
 
-def generateDx(vector, **kwargs):
-    return np.identity(len(vector)) * karges(kwargs, 'dx', 0.01) + vector
-
-
 def optimizer(inputs, weights, outputs, **kwargs):
     rawCost, learningRate, dx = karges(kwargs, 'rawCost', cost(outputs, layer(inputs, weights, **kwargs))), karges(kwargs, 'learningRate', 0.1), karges(kwargs, 'dx', 0.01)
-    print('doing inputs', inputs.shape)
-    newInputs = inputs - (cost(outputs, layer(generateDx(inputs, **kwargs), weights, **kwargs)) - rawCost) / dx * learningRate
-    print('finished inputs')
-    newWeights = []
-    for neuronIndex, neuronWeights in enumerate(weights):
-        print('doing neuron', neuronIndex)
-        newWeights.append(neuronWeights - (cost(outputs[neuronIndex], layer(inputs, generateDx(neuronWeights, **kwargs), **kwargs)) - rawCost) / dx * learningRate)
-        print('finished neuron', neuronIndex)
-    newWeights = np.array(newWeights)
-    print(newInputs.shape, newWeights.shape)
+    inputAmount = len(inputs) + 1
+    dxWeights = np.eye(inputAmount).reshape([inputAmount, 1, inputAmount]) * dx + weights
+    newWeights = weights - (cost(outputs, layer(inputs, dxWeights, **kwargs)) - rawCost).transpose() / dx * learningRate
+    newInputs = deepcopy(inputs).astype(np.float64)
+    for inputIndex, dxInput in enumerate(inputs + dx):
+        newInputs[inputIndex] = dxInput
+        newInputs[inputIndex] = inputs[inputIndex] - (sumCost(outputs, layer(newInputs, newWeights)) - sumCost(outputs, layer(inputs, newWeights))) / dx * learningRate
+    
     return newInputs, newWeights
 
 
@@ -79,7 +77,7 @@ def train(datasetFunc, weights, **kwargs):
         inputs, outputs = datasetFunc(iteration, **kwargs)
         newWeights = backProp(inputs, newWeights, outputs, **kwargs)
         prediction = neuralNetwork(inputs, weights, **kwargs)[-1]
-        iterCost = cost(outputs, prediction)
+        iterCost = sumCost(outputs, prediction)
         print(f'Statistics of iteration #{iteration + 1}:\n\nPrediction: {prediction}\n\nDataset Output: {outputs}\n\nCost: {iterCost}')
     return newWeights
 
@@ -89,11 +87,16 @@ def backProp(inputs, weights, outputs, **kwargs):
     newWeights = deepcopy(weights)[::-1]
     targetOutputs = outputs
     for layerIndex, layerWeights in enumerate(newWeights):
+        print('starting layer', layerIndex)
         targetOutputs, newWeights[layerIndex] = optimizer(layerInputs[layerIndex], layerWeights, targetOutputs, **kwargs)
+        print('finished layer', layerIndex)
     return newWeights[::-1]
 
 
 if __name__ == '__main__':
     i = np.arange(2)
     o = np.array([1, 0, 1])
+    o1 = np.array([1, 0, 0, 1, 1])
     w = generateWeights([2, 5, 3])
+    w1 = deepcopy(w[0])
+    nw = deepcopy(w1)
