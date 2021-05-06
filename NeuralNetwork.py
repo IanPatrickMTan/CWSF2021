@@ -41,24 +41,28 @@ def imageSplit(image, kernelShape):
 
 
 class Model:
-    def __init__(self):
+    def __init__(self, layers = []):
+        self.layers = layers
+
+    def add(self, layerType):
+        self.layers.append(layerType)
 
 
 class FullyConnected:
     def __init__(self, weights, actFunc = sigmoid):
-        self.weights, self.actFunc = weights, actFunc
+        self.weights, self.actFunc = deepcopy(weights), actFunc
 
 
     def layer(self, inputs, **kwargs):
         weights, actFunc = karges(kwargs, {'weights': self.weights, 'actFunc': self.actFunc})
-        return actFunc(np.tensordot(np.append(inputs, 1), weights, axis = [-1, -1]))
+        return actFunc(np.tensordot(np.append(inputs, 1), weights, axes = [-1, -1]))
 
 
     def gradient(self, inputs, outputs, **kwargs):
-        actFunc, actFuncDeriv = karges(kwargs, {'actFunc': sigmoid, 'actFuncDeriv': sigmoidD})
+        weights, actFunc, actFuncDeriv = karges(kwargs, {'weights': self.weights, 'actFunc': sigmoid, 'actFuncDeriv': sigmoidD})
         weightedSum = self.layer(inputs, actFunc = lol, **kwargs)
         layerOutputs = actFunc(weightedSum)
-        chainDerivCoef = 2 * (layerOutputs - outputs) * actFuncD(weightedSum)
+        chainDerivCoef = 2 * (layerOutputs - outputs) * actFuncDeriv(weightedSum)
         inputsGrad = np.sum(weights.transpose()[:-1] * chainDerivCoef, axis = -1)
         weightsGrad = np.outer(np.append(inputs, 1), chainDerivCoef).transpose()
         return inputsGrad, weightsGrad
