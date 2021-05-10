@@ -4,6 +4,10 @@ from numba import jit
 from datetime import datetime
 
 
+def maxPool(x):
+    return x.reshape(len(x), len(x[0]), -1).max(axis = -1)
+
+
 def lol(x):
     return x
 
@@ -49,8 +53,8 @@ def imageFormat(image, kernelShape):
         width = kernelShape[1] - imageShape[2] - 2
     else:
         width = kernelShape[1]
-    for y in range(kernelShape[0]):
-        for x in range(kernelShape[1]):
+    for y in range(height):
+        for x in range(width):
             formattedImage[:, y::kernelShape[0], x::kernelShape[1]] = imageSplit(image[:, y:imageShape[1] - (imageShape[1] - y) % kernelShape[0], x:imageShape[2] - (imageShape[2] - x) % kernelShape[1]], kernelShape)
     return formattedImage.reshape(imageShape[0], imageShape[1] - kernelShape[0] + 1, imageShape[2] - kernelShape[1] + 1, -1, imageShape[3])
 
@@ -98,5 +102,32 @@ class dense:
         inputsGrad = np.sum(weights.transpose()[:-1] * chainDerivCoef, axis = -1)
         weightsGrad = np.outer(np.append(inputs, 1), chainDerivCoef).transpose()
         return inputsGrad, weightsGrad
+
+
+class flatten:
+    def __init__(self):
+        pass
+
+
+    def layer(self, inputs):
+        self.inputsShape = inputs.shape
+        return inputs.flatten()
+
+
+    def optimize(self, inputs, outputs, **kwargs):
+        return inputs
+
+
+def pool:
+    def __init__(self, shrinkScale = 2, poolMethod = maxPool):
+        self.shrinkScale, self.poolMethod = shrinkScale, poolMethod
+
+
+    def layer(self, image, **kwargs):
+        shrinkScale, poolMethod = karges(kwargs, {'shrinkScale': self.shrinkScale, 'poolMethod': self.poolMethod})
+        return poolMethod(imageSplit(image[:len(image) // shrinkScale, :len(image[0]) // shrinkScale], [shrinkScale, shrinkScale]))
+
+    def optimize(self, inputs, outputs, **kwargs):
+        return inputs
 
 
