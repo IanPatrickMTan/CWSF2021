@@ -3,3 +3,9 @@ I have decided to rewrite the neural network module for organization purposes. I
 
 May 4, 2021
 I have succcessfully transfered the fully connected layer into its own object in NeuralNetwork.py, I'm now going to try to learn more about dot products and derrivatives with hopes of solving the sum mystery. For context the "sum mystery" is basically just me confused out of my mind by why there's a sum function in my code that makes it work, if the sum function isn't there the shape is all wrong and the broadcast will obviously fail, but the reason why the sum is there on a more derivation level is still unknown. Luckily today I got a lead on this mystery when I found that it maybe linked to this theorem describing the derrivative of vector functions that utilize the dot product operation. I hope to solve this "mystery" by tomorrow.That's all for today I'm a bit busy so work is slow, I'll need to pick up the pace, (I say as I cram for my english test tomorrow).
+
+May 5, 2021
+I have thought more about the model object, I've added the add method and the layer list not much else there to be mentioned tho, I'm still considering a method for removing layers but this can be easily done through model.layers and using pop or another built in method. I've also fully tested the FullyConnected object and fixed a few bugs as well as doing some general improvements. All considered I'm doing good so far, but I still need to pick up the pace, (I say as I cram for my myth assignment).
+
+May 9, 2021
+I've literally actually put in a bit of effort for once and got some stuff done. Convolution layer lookin better and the image format stuff is lookin great! Little note for myself though, I need to fix the imageSplit function because if the dimensions of the image is not at least the same as the kernel + 2, the there's an error due to the cropping code I use which enters a 0 length axis messing up all my code. All considered I'm doing spectacular!
