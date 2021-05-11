@@ -1,3 +1,3 @@
 # CWSF2021
 My CWSF repo!
-![](CancerFlow\ v2.png)
+![](https://github.com/IanPatrickMTan/CWSF2021/blob/main/CancerFlow%20v2.png?raw=true)
