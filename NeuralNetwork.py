@@ -1,3 +1,11 @@
+"""
+things to do:
+    quickly do convolution gradient method
+    change maxpooling to average pooling and do the optimize method
+    add optimize method real quick to convolution and dense
+    do evaluate method in model
+    do training method in model
+"""
 import numpy as np
 import _pickle as pkl
 from numba import jit
@@ -84,6 +92,10 @@ class convolution:
         return weightedSum.reshape([-1] + list(weightedSum.shape)[2:])
 
 
+    def gradient(self, inputs, outputs):
+        kernel, 
+
+
 class dense:
     def __init__(self, weights, activation = sigmoid, activationDerivative = sigmoidD, cost = cost, costDerivative = costDerivative):
         self.weights, self.activation, self.activationDerivative, self.cost, self.costDerivative = deepcopy(weights), activation, activationDerivative, cost, costDerivative
@@ -115,7 +127,7 @@ class flatten:
 
 
     def optimize(self, inputs, outputs, **kwargs):
-        return inputs
+        return outputs.reshape(inputs.shape)
 
 
 def pool:
